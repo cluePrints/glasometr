@@ -14,6 +14,8 @@ import org.apache.xpath.XPathAPI;
 import org.ccil.cowan.tagsoup.Parser;
 import org.chesno.glasometr.domain.Protocol;
 import org.chesno.glasometr.domain.Vote;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.NodeIterator;
@@ -24,12 +26,24 @@ import org.xml.sax.XMLReader;
 
 public class ProtocolParser
 {
+	private static final Logger log = LoggerFactory.getLogger(ProtocolParser.class);
+	
 	public Protocol parse(InputStream html) throws Exception
 	{
 		Node root = initDom(html);
-		NodeIterator nl = XPathAPI.selectNodeIterator(root, "//tr");
-		Node n;
 		Protocol result = new Protocol();
+		parseVotes(root, result);
+		Node nodeWithTitle = XPathAPI.selectSingleNode(root, "//table//td[@class='f2']/b[2]");
+		result.setTitle(nodeWithTitle.getTextContent().trim());
+
+		return result;
+	}
+
+	private void parseVotes(Node root, Protocol result)
+			throws TransformerException
+	{
+		NodeIterator nl = XPathAPI.selectNodeIterator(root, "//tr");
+		Node n;		
 		while ((n = nl.nextNode()) != null)
 		{
 			NodeList cells = XPathAPI.selectNodeList(n,
@@ -63,7 +77,7 @@ public class ProtocolParser
 				
 				if (name != null && vote != null)
 				{
-					System.out.println("Adding "+vote+" for "+name);
+					log.debug("Parsed {} for {}", vote, name);
 					result.getVotes().put(name, vote);
 					name = null;
 					vote = null;				
@@ -71,8 +85,6 @@ public class ProtocolParser
 
 			}
 		}
-
-		return result;
 	}
 
 	private Node initDom(InputStream html) throws SAXNotRecognizedException,

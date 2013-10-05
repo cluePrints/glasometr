@@ -58,5 +58,7 @@ public class ProtocolParserTest
 		Assert.assertEquals(notPresentCount + refrainedCount + notVotedCount + noCount + yesCount, protocol.getVotes().size());
 		Assert.assertEquals(Vote.Yes, protocol.getVotes().get("Бенюк Б.М."));
 		Assert.assertEquals(Vote.NotVoted, protocol.getVotes().get("Сольвар Р.М."));
+		String expectedTitle = "Поіменне голосування  про проект Постанови про впровадження мораторію на закриття навчальних закладів системи загальної середньої освіти, розташованих у сільській місцевості (№2367) - за основу та в цілому";
+		Assert.assertEquals(expectedTitle, protocol.getTitle());
 	}
 }
