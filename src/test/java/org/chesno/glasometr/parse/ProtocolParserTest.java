@@ -3,6 +3,7 @@ package org.chesno.glasometr.parse;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.chesno.glasometr.domain.Person;
 import org.chesno.glasometr.domain.Protocol;
 import org.chesno.glasometr.domain.Vote;
 import org.junit.Assert;
@@ -25,7 +26,7 @@ public class ProtocolParserTest
 		int notVotedCount = 0;
 		int refrainedCount = 0;
 		int notPresentCount = 0;
-		for (Map.Entry<String, Vote> e : protocol.getVotes().entrySet())
+		for (Map.Entry<Person, Vote> e : protocol.getVotes().entrySet())
 		{
 			if (e.getValue() == Vote.Yes)
 			{
@@ -56,8 +57,8 @@ public class ProtocolParserTest
 		Assert.assertEquals(16, refrainedCount);
 		Assert.assertEquals(52+9+12+16, notPresentCount);
 		Assert.assertEquals(notPresentCount + refrainedCount + notVotedCount + noCount + yesCount, protocol.getVotes().size());
-		Assert.assertEquals(Vote.Yes, protocol.getVotes().get("Бенюк Б.М."));
-		Assert.assertEquals(Vote.NotVoted, protocol.getVotes().get("Сольвар Р.М."));
+		Assert.assertEquals(Vote.Yes, protocol.getVotes().get(new Person().setName("Бенюк Б.М.")));
+		Assert.assertEquals(Vote.NotVoted, protocol.getVotes().get(new Person().setName("Сольвар Р.М.")));
 		String expectedTitle = "Поіменне голосування  про проект Постанови про впровадження мораторію на закриття навчальних закладів системи загальної середньої освіти, розташованих у сільській місцевості (№2367) - за основу та в цілому";
 		Assert.assertEquals(expectedTitle, protocol.getTitle());
 	}

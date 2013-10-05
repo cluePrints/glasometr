@@ -7,9 +7,10 @@ import org.joda.time.DateTime;
 
 public class Protocol
 {
+	private String siteId;	
 	private DateTime date;
 	private String title;
-	private Map<String, Vote> votes = new HashMap<String, Vote>();
+	private Map<Person, Vote> votes = new HashMap<Person, Vote>();
 	public DateTime getDate()
 	{
 		return date;
@@ -26,12 +27,20 @@ public class Protocol
 	{
 		this.title = title;
 	}
-	public Map<String, Vote> getVotes()
+	public Map<Person, Vote> getVotes()
 	{
 		return votes;
 	}
-	public void setVotes(Map<String, Vote> votes)
+	public void setVotes(Map<Person, Vote> votes)
 	{
 		this.votes = votes;
+	}
+	public String getSiteId()
+	{
+		return siteId;
+	}
+	public void setSiteId(String siteId)
+	{
+		this.siteId = siteId;
 	}
 }

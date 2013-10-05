@@ -22,6 +22,7 @@ import com.google.common.util.concurrent.RateLimiter;
 
 public class ProtocolGrabberTest
 {
+	public static final String FILE_PREFFIX = "ns_golos_print_g_id_=";
 	private static final Logger log = LoggerFactory.getLogger(ProtocolGrabberTest.class); 
 	
 	@Test
@@ -32,7 +33,7 @@ public class ProtocolGrabberTest
 		RateLimiter limiter = RateLimiter.create(0.1);
 		while (i <= 2700 && i > 0)
 		{
-			String fileName = "ns_golos_print_g_id_="+i;
+			String fileName = FILE_PREFFIX+i;
 			File file = new File(fileName);
 			if (file.exists())
 			{

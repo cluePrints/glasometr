@@ -12,6 +12,7 @@ import javax.xml.transform.sax.SAXSource;
 
 import org.apache.xpath.XPathAPI;
 import org.ccil.cowan.tagsoup.Parser;
+import org.chesno.glasometr.domain.Person;
 import org.chesno.glasometr.domain.Protocol;
 import org.chesno.glasometr.domain.Vote;
 import org.slf4j.Logger;
@@ -77,8 +78,9 @@ public class ProtocolParser
 				
 				if (name != null && vote != null)
 				{
-					log.debug("Parsed {} for {}", vote, name);
-					result.getVotes().put(name, vote);
+					Person person = new Person();
+					person.setName(name);
+					result.getVotes().put(person, vote);
 					name = null;
 					vote = null;				
 				}

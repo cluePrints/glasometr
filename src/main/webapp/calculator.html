@@ -32,15 +32,14 @@
 	<script type="text/javascript" src="js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="js/scripts.js"></script>
 </head>
-
 <body>
 <div class="container-fluid">
 	<div class="row-fluid">
 		<div class="span12">
 			<h3>
-				Хто з політиків представляє мою думку?
+				Хто з політиків представляє мою думку??
 			</h3>
-			<table class="table">
+			<table class="table" id="votesTable">
 				<thead>
 					<tr>
 						<th>
@@ -105,5 +104,60 @@
 		</div>
 	</div>
 </div>
+<script>
+	var headers = ['#', 'Закон', 'Мій голос', 'Азаров'];
+	var tableData = [{id:1, title:'Закон №1', me:'no', p1:'-'},
+	                 {id:2, title:'Закон №2', me:'yes', p1:'yes'},
+	                 {id:3, title:'Закон №3', me:'no', p1:'yes'}]
+	
+	function generateTheadFromData(headers) {
+		var fragment = document.createDocumentFragment(),
+	    tr, th, i, il, key, checkbox, value;
+		var thead = document.createElement('thead');
+		fragment.appendChild( thead );
+		tr = document.createElement('tr');
+		for(i=0,il=headers.length;i<il;i++) {
+	        th = document.createElement('th');
+	        th.appendChild( document.createTextNode( headers[i] ) );
+	        thead.appendChild( th );
+		}
+		return fragment;
+	}
+	function generateTbodyFromData(tableData) {
+		var fragment = document.createDocumentFragment(),
+	    tr, td, i, il, key, checkbox, value;
+		var tbody = document.createElement('tbody');
+		fragment.appendChild( tbody );
+		for(i=0,il=tableData.length;i<il;i++) {
+		    tr = document.createElement('tr');
+		    for(key in tableData[i]) {
+		        td = document.createElement('td');
+		        value = tableData[i][key];
+		        if (key == 'id' || key == 'title' || value == '-') {
+		        	td.appendChild( document.createTextNode( value ) );	
+		        } else {
+		        	checkbox = document.createElement('input');
+		        	checkbox.type = 'checkbox';
+		        	if (key.indexOf('p') == 0) {
+		        		checkbox.disabled = 'disabled';
+		        	}
+		        	if (value == 'yes') {
+		        		checkbox.checked = 'true';
+		        	}
+		        	td.appendChild(checkbox);
+		        }
+		        tr.appendChild( td );
+		    }
+		    tbody.appendChild( tr );
+		}
+		return fragment;
+	}
+	
+	var tbodyFragment = generateTbodyFromData(tableData);
+	$('#votesTable tbody').replaceWith( tbodyFragment );
+	
+	var theadFragment = generateTheadFromData(headers);
+	$('#votesTable thead').replaceWith( theadFragment );
+</script>
 </body>
 </html>
