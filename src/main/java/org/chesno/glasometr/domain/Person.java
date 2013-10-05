@@ -1,5 +1,8 @@
 package org.chesno.glasometr.domain;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class Person
 {
 	private String name;
