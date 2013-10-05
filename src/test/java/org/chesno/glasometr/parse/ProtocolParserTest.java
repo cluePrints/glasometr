@@ -54,7 +54,8 @@ public class ProtocolParserTest
 		Assert.assertEquals(0, noCount);
 		Assert.assertEquals(152, notVotedCount);
 		Assert.assertEquals(16, refrainedCount);
-		// TODO: later check Assert.assertEquals(52, notPresentCount);
+		Assert.assertEquals(52+9+12+16, notPresentCount);
+		Assert.assertEquals(notPresentCount + refrainedCount + notVotedCount + noCount + yesCount, protocol.getVotes().size());
 		Assert.assertEquals(Vote.Yes, protocol.getVotes().get("Бенюк Б.М."));
 		Assert.assertEquals(Vote.NotVoted, protocol.getVotes().get("Сольвар Р.М."));
 	}
