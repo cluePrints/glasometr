@@ -37,7 +37,7 @@ public class ProtocolGrabberTest
 			if (file.exists())
 			{
 				log.debug("{} - done already.", i);
-				i++;
+				i--;
 				continue;
 			}
 			
