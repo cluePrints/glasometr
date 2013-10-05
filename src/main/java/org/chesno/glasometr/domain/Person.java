@@ -1,12 +1,32 @@
 package org.chesno.glasometr.domain;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
+@Entity
 @XmlRootElement
 public class Person
 {
+	@Id
+	@GeneratedValue
+	private int id;
+	
 	private String name;
-
+	
+	@JsonIgnore
+	public int getId()
+	{
+		return id;
+	}
+	@JsonIgnore
+	public void setId(int id)
+	{
+		this.id = id;
+	}
 	public String getName()
 	{
 		return name;

@@ -26,7 +26,7 @@ public class ProtocolParserTest
 		int notVotedCount = 0;
 		int refrainedCount = 0;
 		int notPresentCount = 0;
-		for (Map.Entry<Person, Vote> e : protocol.getVotes().entrySet())
+		for (Map.Entry<String, Vote> e : protocol.getVotes().entrySet())
 		{
 			if (e.getValue() == Vote.Yes)
 			{

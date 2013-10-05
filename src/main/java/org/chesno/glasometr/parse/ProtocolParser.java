@@ -12,11 +12,8 @@ import javax.xml.transform.sax.SAXSource;
 
 import org.apache.xpath.XPathAPI;
 import org.ccil.cowan.tagsoup.Parser;
-import org.chesno.glasometr.domain.Person;
 import org.chesno.glasometr.domain.Protocol;
 import org.chesno.glasometr.domain.Vote;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.NodeIterator;
@@ -27,8 +24,6 @@ import org.xml.sax.XMLReader;
 
 public class ProtocolParser
 {
-	private static final Logger log = LoggerFactory.getLogger(ProtocolParser.class);
-	
 	public Protocol parse(InputStream html) throws Exception
 	{
 		Node root = initDom(html);
@@ -77,10 +72,8 @@ public class ProtocolParser
 				}
 				
 				if (name != null && vote != null)
-				{
-					Person person = new Person();
-					person.setName(name);
-					result.getVotes().put(person, vote);
+				{					
+					result.getVotes().put(name, vote);
 					name = null;
 					vote = null;				
 				}
@@ -101,8 +94,9 @@ public class ProtocolParser
 				.newTransformer();
 
 		DOMResult dom = new DOMResult();
-		transformer
-				.transform(new SAXSource(reader, new InputSource(html)), dom);
+		InputSource inputSource = new InputSource(html);
+		inputSource.setEncoding("utf-8");
+		transformer.transform(new SAXSource(reader, inputSource), dom);
 		Node root = dom.getNode();
 		return root;
 	}

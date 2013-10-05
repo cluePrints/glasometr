@@ -40,67 +40,17 @@
 				Хто з політиків представляє мою думку??
 			</h3>
 			<table class="table" id="votesTable">
-				<thead>
-					<tr>
-						<th>
-							#
-						</th>
-						<th>
-							Проект
-						</th>
-						<th>
-							Ваш вибір
-						</th>
-						<th>
-							Азаров М. .... і тут куча ще їх
-						</th>
-					</tr>
+				<thead>					
 				</thead>
 				<tbody>
 					<tr>
 						<td>
-							1
-						</td>
-						<td>
-							Закон №1
-						</td>
-						<td>
-							<input type="checkbox"/>
-						</td>
-						<td>
-							-
-						</td>
-					</tr>
-					<tr class="success">
-						<td>
-							1
-						</td>
-						<td>
-							Закон №2
-						</td>
-						<td>
-							<input type="checkbox" checked/>
-						</td>
-						<td>
-							<input type="checkbox" disabled="disabled"/>
-						</td>
-					</tr>
-					<tr class="error">
-						<td>
-							2
-						</td>
-						<td>
-							Закон №3
-						</td>
-						<td>
-							<input type="checkbox"/>
-						</td>
-						<td>
-							<input type="checkbox" disabled="disabled"/>
-						</td>
+							Дані завантажуються... чи увімкнений у вас JavaScript?
+						</td>						
 					</tr>
 				</tbody>
 			</table>
+			<input type="search" id="search-add-bill"/>
 		</div>
 	</div>
 </div>
@@ -118,6 +68,27 @@
 		}
 		return fragment;
 	}
+	function renderTd(key, value) {
+		td = document.createElement('td');
+        if (value == 'Refrained' || value == 'WasNotPresent' || value == 'NotVoted') {
+        	value = '-';
+        }		        
+        if (key == 'id' || key == 'title' || value == '-') {
+        	td.appendChild( document.createTextNode( value ) );	
+        } else {
+        	checkbox = document.createElement('input');
+        	checkbox.type = 'checkbox';
+        	checkbox.className='myChoice';
+        	if (key.indexOf('p') == 0) {
+        		checkbox.disabled = 'disabled';
+        	}
+        	if (value == 'Yes') {
+        		checkbox.checked = 'true';
+        	}
+        	td.appendChild(checkbox);        	
+        }
+        return td;
+	}
 	function generateTbodyFromData(tableData) {
 		var fragment = document.createDocumentFragment(),
 	    tr, td, i, il, key, checkbox, value;
@@ -126,49 +97,96 @@
 		for(i=0,il=tableData.length;i<il;i++) {
 		    tr = document.createElement('tr');
 		    for(key in tableData[i]) {
-		        td = document.createElement('td');
 		        value = tableData[i][key];
-		        if (value == 'Refrained' || value == 'WasNotPresent' || value == 'NotVoted') {
-		        	value = '-';
-		        }		        
-		        if (key == 'id' || key == 'title' || value == '-') {
-		        	td.appendChild( document.createTextNode( value ) );	
-		        } else {
-		        	checkbox = document.createElement('input');
-		        	checkbox.type = 'checkbox';
-		        	if (key.indexOf('p') == 0) {
-		        		checkbox.disabled = 'disabled';
-		        	}
-		        	if (value == 'Yes') {
-		        		checkbox.checked = 'true';
-		        	}
-		        	td.appendChild(checkbox);
-		        }
+		        td = renderTd(key, value);
 		        tr.appendChild( td );
 		    }
 		    tbody.appendChild( tr );
 		}
 		return fragment;
-	}
-	
-	var oopsCallback = function(data){
-		alert('Pls refresh page and try once again.');
-	};
-	
-	var okCallback = function(data) {
-		var tbodyFragment = generateTbodyFromData(data.billVotes);
-		$('#votesTable tbody').replaceWith( tbodyFragment );
+	}	
+	function refreshMatch() {
+		var oopsCallback = function(data){
+			alert('Pls refresh page and try once again.');
+		};
 		
-		var theadFragment = generateTheadFromData(data.headers);
-		$('#votesTable thead').replaceWith( theadFragment );	
+		var okCallback = function(data) {
+			var tbodyFragment = generateTbodyFromData(data.billVotes);
+			$('#votesTable tbody').replaceWith( tbodyFragment );
+			
+			var theadFragment = generateTheadFromData(data.headers);
+			$('#votesTable thead').replaceWith( theadFragment );
+			
+			$(".myChoice").change(function() {
+				refreshMatch();
+			});
+		}
+		
+		$.ajax
+	    ({
+	        url: '/service/match',
+	        type: "POST",
+	        timeout: 3600000,
+	        data: JSON.stringify(clientState),
+	        contentType: "application/json"
+	    }).then(okCallback, oopsCallback);
+	}
+		
+	function addSelectedBill(){
+		var title = $( "#search-add-bill" ).val();
+		var idx = cachedState.billNames.indexOf(title);
+		if (idx>=0) {
+			var billId = cachedState.billIds[idx];
+			clientState.selectedBillIds.push(billId);
+			return true;
+		}
+		return false;
 	}
 	
-	$.ajax
-    ({
-        url: '/service/match',
-        type: "POST",
-        timeout: 3600000
-    }).then(okCallback, oopsCallback);
+	function bindTypeahead() {
+		$( "#search-add-bill" ).typeahead({
+	    	source: function (query, process) {
+	            return $.get('/service/search', { q: query }, function (data) {
+	            	cachedState.billNames = data.optionNames;
+	            	cachedState.billIds = data.optionIds;
+	                return process(data.optionNames);
+	            });
+	        }
+	    });
+	}
+    
+    $( "#search-add-bill" ).keyup(function(e){
+        if(e.keyCode == 13)
+        {
+        	if (addSelectedBill()) {
+        		$( "#search-add-bill" ).val( "" );
+        		refreshMatch();
+        	}
+        }
+    });
+    
+    $('#search-add-bill').on('change', function(evt,data) {
+    	if (addSelectedBill()) {
+    		$( "#search-add-bill" ).val( "" );
+    		refreshMatch();
+    	}
+   	});
+    
+    $( "#search-add-bill" ).on('typeahead:selected', function(){
+    	alert('');
+    });
+	
+	var clientState = {
+		selectedBillIds: [5, 30, 206]	
+	};
+
+	var cachedState = {
+		billIds: [],
+		billNames: []
+	}
+    
+	refreshMatch();
+	bindTypeahead();
 </script>
 </body>
 </html>

@@ -20,6 +20,10 @@
 			<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
 			<param-value>true</param-value>
 		</init-param>
+		<init-param>
+			<param-name>derby</param-name>
+			<param-value>persistence/derby</param-value>
+		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 
@@ -27,4 +31,9 @@
 		<servlet-name>rest.service</servlet-name>
 		<url-pattern>/service/*</url-pattern>
 	</servlet-mapping>
+
+	<persistence-unit-ref>
+		<persistence-unit-ref-name>persistence/derby</persistence-unit-ref-name>
+		<persistence-unit-name>derby</persistence-unit-name>
+	</persistence-unit-ref>
 </web-app>
