@@ -57,9 +57,20 @@ public class ProtocolParserTest
 		Assert.assertEquals(16, refrainedCount);
 		Assert.assertEquals(52+9+12+16, notPresentCount);
 		Assert.assertEquals(notPresentCount + refrainedCount + notVotedCount + noCount + yesCount, protocol.getVotes().size());
-		Assert.assertEquals(Vote.Yes, protocol.getVotes().get(new Person().setName("Бенюк Б.М.")));
-		Assert.assertEquals(Vote.NotVoted, protocol.getVotes().get(new Person().setName("Сольвар Р.М.")));
+		Assert.assertEquals(Vote.Yes, protocol.getVotes().get("Бенюк Б.М."));
+		Assert.assertEquals(Vote.NotVoted, protocol.getVotes().get("Сольвар Р.М."));
 		String expectedTitle = "Поіменне голосування  про проект Постанови про впровадження мораторію на закриття навчальних закладів системи загальної середньої освіти, розташованих у сільській місцевості (№2367) - за основу та в цілому";
 		Assert.assertEquals(expectedTitle, protocol.getTitle());
+	}
+	
+	@Test
+	public void ShouldParseVoteAgainst() throws Exception
+	{
+		String fileName = "ns_golos_print_g_id_=917";
+		InputStream str = getClass().getClassLoader().getResourceAsStream(fileName);
+		
+		ProtocolParser unit = new ProtocolParser();
+		Protocol protocol = unit.parse(str);
+		Assert.assertEquals(Vote.No, protocol.getVotes().get("Агафонова Н.В."));
 	}
 }

@@ -130,9 +130,8 @@
 			$('#votesTable thead').replaceWith( theadFragment );
 			
 			$("input.myChoice").change(function(evt, data) {
-				var currentVal = $(this).val() == "on" ? true : false;
 				var id = evt.target['data-id'];
-				cachedState.mySelections[id] = !currentVal; 
+				cachedState.mySelections[id] = !cachedState.mySelections[id]; 
 				refreshMatch();
 			});
 			

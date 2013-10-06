@@ -8,6 +8,8 @@ import javax.persistence.EntityManagerFactory;
 import org.chesno.glasometr.domain.Bill;
 import org.chesno.glasometr.domain.BillVote;
 import org.chesno.glasometr.domain.BillVotes;
+import org.chesno.glasometr.domain.MatchResponse;
+import org.chesno.glasometr.domain.Person;
 import org.chesno.glasometr.domain.Vote;
 
 import com.google.common.collect.Lists;
@@ -22,7 +24,7 @@ public class Matcher
 		this.ef = ef;
 	}
 
-	public List<BillVotes> lookFor(List<Boolean> votes,
+	public MatchResponse lookFor(List<Boolean> votes,
 			List<Integer> selectedBillIds)
 	{
 		EntityManager em = ef.createEntityManager();
@@ -31,7 +33,7 @@ public class Matcher
 		List<Integer> yesBillIds = Lists.newArrayList();
 		List<Integer> noBillIds = Lists.newArrayList();
 		if (votes == null || selectedBillIds == null) {
-			return billVotes;
+			return new MatchResponse();
 		}
 		for (int i = 0; i < votes.size(); i++)
 		{
@@ -48,6 +50,7 @@ public class Matcher
 			}
 		}
 
+		@SuppressWarnings("unchecked")
 		List<Object[]> results = em
 				.createQuery(
 						"select person.id,count(*) from BillVote v where "
@@ -62,6 +65,12 @@ public class Matcher
 				.getResultList();
 
 		
+		List<String> people = Lists.newArrayList();
+		if (!results.isEmpty())
+		{
+			Person person = em.find(Person.class, (Integer)(results.get(0))[0]);
+			people.add(person.getName());
+		}
 		for (int i=0; i<selectedBillIds.size(); i++)
 		{
 			int billId = selectedBillIds.get(i);
@@ -83,7 +92,6 @@ public class Matcher
 					.setParameter("id", pId)
 					.setParameter("bid", billId)
 					.getSingleResult();
-				// TODO: this one should be from state
 				b.setP1(vote.getVote());
 			}
 			
@@ -95,6 +103,15 @@ public class Matcher
 		}
 		em.close();
 
-		return billVotes;
+		
+		MatchResponse response = new MatchResponse();
+		response.setBillVotes(billVotes);
+		
+		response.getHeaders().add("#");
+		response.getHeaders().add("Закон");
+		response.getHeaders().add("Мій голос");
+		response.getHeaders().addAll(people);
+
+		return response;
 	}
 }

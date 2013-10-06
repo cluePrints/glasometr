@@ -59,7 +59,7 @@ public class ProtocolParser
 					vote = Vote.Yes;
 				} else if ("Проти".equalsIgnoreCase(text))
 				{
-					vote = Vote.Yes;
+					vote = Vote.No;
 				} else if (text.startsWith("Відсут"))
 				{
 					vote = Vote.WasNotPresent;
