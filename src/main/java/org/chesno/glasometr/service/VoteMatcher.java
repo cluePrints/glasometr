@@ -1,6 +1,7 @@
 package org.chesno.glasometr.service;
 
-import javax.persistence.EntityManager;
+import java.util.List;
+
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceUnit;
@@ -9,11 +10,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.chesno.glasometr.domain.Bill;
 import org.chesno.glasometr.domain.BillVotes;
 import org.chesno.glasometr.domain.ClientState;
 import org.chesno.glasometr.domain.MatchResponse;
-import org.chesno.glasometr.domain.Vote;
+import org.chesno.glasometr.parse.Matcher;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,24 +37,9 @@ public class VoteMatcher
 			return response;
 		}
 		
-		EntityManager em = ef.createEntityManager();
+		List<BillVotes> res = new Matcher(ef).lookFor(state.getSelectedValues(), state.getSelectedBillIds());
+		response.setBillVotes(res);
 		
-		for (int billId : state.getSelectedBillIds())
-		{
-			BillVotes b = new BillVotes();
-			b.setId(billId + "");
-			
-			// TODO: this one should be from state
-			b.setMyVote(Vote.Yes);
-			b.setP1(Vote.Refrained);
-			
-			Bill bill = em.find(Bill.class, billId);
-			b.setTitle(bill.getTitle());
-			response.getBillVotes().add(b);
-
-		}
-		
-		em.close();
 		return response;
 	}
 }

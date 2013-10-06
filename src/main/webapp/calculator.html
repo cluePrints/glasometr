@@ -45,7 +45,7 @@
 				<tbody>
 					<tr>
 						<td>
-							Дані завантажуються... чи увімкнений у вас JavaScript?
+							Дані завантажуються... чи щось поламалось... у вас увімкнений JavaScript?
 						</td>						
 					</tr>
 				</tbody>
@@ -68,23 +68,35 @@
 		}
 		return fragment;
 	}
-	function renderTd(key, value) {
-		td = document.createElement('td');
+	function renderTd(key, row) {
+		var value = row[key];
+		var td = document.createElement('td');
         if (value == 'Refrained' || value == 'WasNotPresent' || value == 'NotVoted') {
         	value = '-';
         }		        
         if (key == 'id' || key == 'title' || value == '-') {
         	td.appendChild( document.createTextNode( value ) );	
-        } else {
-        	checkbox = document.createElement('input');
-        	checkbox.type = 'checkbox';
-        	checkbox.className='myChoice';
-        	if (key.indexOf('p') == 0) {
-        		checkbox.disabled = 'disabled';
+        } else {        	        	
+        	var id = row['id'];
+        	var userMadeSomeChoiceForIt = id in cachedState.mySelections;
+        	if (userMadeSomeChoiceForIt) {
+        		checkbox = document.createElement('input');
+            	checkbox.type = 'checkbox';
+            	checkbox.className='myChoice';
+            	checkbox['data-id'] = id;
+        		if (value == 'Yes') {
+            		checkbox.checked = 'true';
+            	}
+        		if (key.indexOf('p') == 0) {
+            		checkbox.disabled = 'disabled';
+            	}
+        	} else {
+        		checkbox = document.createElement('label');
+        		checkbox.className = 'myChoice';
+        		checkbox.innerHTML = '--';
+        		checkbox.value = id;
         	}
-        	if (value == 'Yes') {
-        		checkbox.checked = 'true';
-        	}
+        	        	         
         	td.appendChild(checkbox);        	
         }
         return td;
@@ -97,8 +109,8 @@
 		for(i=0,il=tableData.length;i<il;i++) {
 		    tr = document.createElement('tr');
 		    for(key in tableData[i]) {
-		        value = tableData[i][key];
-		        td = renderTd(key, value);
+		        row = tableData[i];
+		        td = renderTd(key, row);
 		        tr.appendChild( td );
 		    }
 		    tbody.appendChild( tr );
@@ -117,9 +129,34 @@
 			var theadFragment = generateTheadFromData(data.headers);
 			$('#votesTable thead').replaceWith( theadFragment );
 			
-			$(".myChoice").change(function() {
+			$("input.myChoice").change(function(evt, data) {
+				var currentVal = $(this).val() == "on" ? true : false;
+				var id = evt.target['data-id'];
+				cachedState.mySelections[id] = !currentVal; 
 				refreshMatch();
 			});
+			
+			$("label.myChoice").click(function(evt, data) {
+				cachedState.mySelections[$(this).val()]=true;
+				refreshMatch();		
+			});
+		}
+		
+		var data = {
+			selectedBillIds: cachedState.selectedBillIds,
+			selectedValues: []
+		}
+		
+		for (i=0;i<data.selectedBillIds.length;i++) {
+			var id = data.selectedBillIds[i];
+			var value = cachedState.mySelections[id];
+			if (value == true) {
+				data.selectedValues.push(true);
+			} else if (value == false) {
+				data.selectedValues.push(false);
+			} else {
+				data.selectedValues.push(null);
+			}
 		}
 		
 		$.ajax
@@ -127,7 +164,7 @@
 	        url: '/service/match',
 	        type: "POST",
 	        timeout: 3600000,
-	        data: JSON.stringify(clientState),
+	        data: JSON.stringify(data),
 	        contentType: "application/json"
 	    }).then(okCallback, oopsCallback);
 	}
@@ -137,7 +174,7 @@
 		var idx = cachedState.billNames.indexOf(title);
 		if (idx>=0) {
 			var billId = cachedState.billIds[idx];
-			clientState.selectedBillIds.push(billId);
+			cachedState.selectedBillIds.push(billId);
 			return true;
 		}
 		return false;
@@ -174,15 +211,13 @@
     
     $( "#search-add-bill" ).on('typeahead:selected', function(){
     	alert('');
-    });
-	
-	var clientState = {
-		selectedBillIds: [5, 30, 206]	
-	};
+    });	
 
 	var cachedState = {
 		billIds: [],
-		billNames: []
+		billNames: [],
+		mySelections: {},
+		selectedBillIds: []
 	}
     
 	refreshMatch();
