@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 
 import org.chesno.glasometr.domain.Bill;
 import org.chesno.glasometr.domain.BillVote;
@@ -57,11 +58,11 @@ public class Matcher
 								+ "(v.bill.id in (:yesBillIds) and v.vote = :voteYes) or "
 								+ "(v.bill.id in (:noBillIds)  and v.vote = :voteNo) "
 								+ "group by person.id " + "having count(*)>0 "
-								+ "order by count(*) desc")
+								+ "order by count(*) desc, person.id")
 				.setParameter("yesBillIds", yesBillIds)
 				.setParameter("voteYes", Vote.Yes)
 				.setParameter("noBillIds", noBillIds)
-				.setParameter("voteNo", Vote.No).setMaxResults(1)
+				.setParameter("voteNo", Vote.No).setMaxResults(5)
 				.getResultList();
 
 		
@@ -70,6 +71,26 @@ public class Matcher
 		{
 			Person person = em.find(Person.class, (Integer)(results.get(0))[0]);
 			people.add(person.getName());
+			if (results.size() > 1)
+			{
+				person = em.find(Person.class, (Integer)(results.get(1))[0]);
+				people.add(person.getName());
+			}
+			if (results.size() > 2)
+			{
+				person = em.find(Person.class, (Integer)(results.get(2))[0]);
+				people.add(person.getName());
+			}
+			if (results.size() > 3)
+			{
+				person = em.find(Person.class, (Integer)(results.get(3))[0]);
+				people.add(person.getName());
+			}
+			if (results.size() > 4)
+			{
+				person = em.find(Person.class, (Integer)(results.get(4))[0]);
+				people.add(person.getName());
+			}
 		}
 		for (int i=0; i<selectedBillIds.size(); i++)
 		{
@@ -87,12 +108,11 @@ public class Matcher
 						
 			if (!results.isEmpty())
 			{
-				int pId = (Integer)(results.get(0))[0];
-				BillVote vote = (BillVote) em.createQuery("from BillVote v where v.person.id = :id and v.bill.id=:bid")
-					.setParameter("id", pId)
-					.setParameter("bid", billId)
-					.getSingleResult();
-				b.setP1(vote.getVote());
+				b.setP1(voteFor(em, results, billId, 0));
+				b.setP2(voteFor(em, results, billId, 1));
+				b.setP3(voteFor(em, results, billId, 2));
+				b.setP4(voteFor(em, results, billId, 3));
+				b.setP5(voteFor(em, results, billId, 4));
 			}
 			
 			Bill bill = em.find(Bill.class, billId);
@@ -113,5 +133,22 @@ public class Matcher
 		response.getHeaders().addAll(people);
 
 		return response;
+	}
+
+	private Vote voteFor(EntityManager em, List<Object[]> results, int billId,
+			int idx)
+	{
+		try
+		{
+			int pId = (Integer)(results.get(idx))[0];
+			BillVote vote = (BillVote) em.createQuery("from BillVote v where v.person.id = :id and v.bill.id=:bid")
+				.setParameter("id", pId)
+				.setParameter("bid", billId)
+				.getSingleResult();
+			Vote vv = vote.getVote();
+			return vv;
+		} catch (NoResultException ex) {
+			return null;
+		}	
 	}
 }
